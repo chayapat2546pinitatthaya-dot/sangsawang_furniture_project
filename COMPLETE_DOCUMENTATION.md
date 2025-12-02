@@ -30,7 +30,9 @@
 - ✅ สมัครสมาชิก / เข้าสู่ระบบ
 - ✅ จัดการข้อมูลส่วนตัว
 - ✅ ดูคำสั่งซื้อ
-- ✅ ระบบผ่อนชำระ (3, 6, 12 งวด)
+- ✅ ระบบผ่อนชำระ (2-12 เดือน)
+- ✅ Top Bar แสดงข้อมูลติดต่อและลิงก์โซเชียลมีเดีย
+- ✅ QR Code สำหรับ Line และ Facebook
 
 ### สำหรับแอดมิน
 - ✅ แดชบอร์ดแสดงสถิติ
@@ -46,9 +48,18 @@ sangsawang-furniture/
 │   ├── public/
 │   ├── src/
 │   │   ├── components/     # React components
+│   │   │   ├── TopBar.js   # Top bar with contact info and social links
+│   │   │   ├── Navbar.js   # Navigation bar
+│   │   │   └── Footer.js   # Footer component
 │   │   ├── pages/          # Pages
-│   │   ├── App.js
-│   │   └── index.js
+│   │   │   ├── Home.js
+│   │   │   ├── ProductDetail.js
+│   │   │   ├── Cart.js
+│   │   │   ├── Login.js
+│   │   │   ├── Register.js
+│   │   │   └── admin/      # Admin pages
+│   │   ├── App.js          # Main App Component (Routing)
+│   │   └── index.js        # React Entry Point
 │   └── package.json
 ├── database/
 │   └── schema.sql          # Database schema

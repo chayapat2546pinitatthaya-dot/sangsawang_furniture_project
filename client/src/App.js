@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import TopBar from './components/TopBar';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -7,6 +8,8 @@ import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Profile from './pages/Profile';
 import Orders from './pages/Orders';
 import OrderDetail from './pages/OrderDetail';
@@ -38,6 +41,7 @@ function AppContent({
 }) {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isLoginOrRegister = location.pathname === '/login' || location.pathname === '/register';
 
   useEffect(() => {
     if (isAdminRoute) {
@@ -74,7 +78,12 @@ function AppContent({
 
   return (
     <div className="app-wrapper">
-      {!isAdminRoute && <Navbar user={user} logout={logout} />}
+      {!isAdminRoute && (
+        <>
+          <TopBar />
+          <Navbar user={user} logout={logout} />
+        </>
+      )}
       <div className="app-content">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -82,6 +91,8 @@ function AppContent({
           <Route path="/cart" element={<Cart />} />
           <Route path="/login" element={!user ? <Login login={login} /> : <Navigate to="/" />} />
           <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+          <Route path="/forgot-password" element={!user ? <ForgotPassword /> : <Navigate to="/" />} />
+          <Route path="/reset-password" element={!user ? <ResetPassword /> : <Navigate to="/" />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
           <Route path="/orders" element={user ? <Orders /> : <Navigate to="/login" />} />
@@ -172,6 +183,9 @@ function AppContent({
                   logout={adminLogout}
                   isSidebarCollapsed={isSidebarCollapsed}
                   toggleSidebar={toggleSidebar}
+                  adminNotifications={adminNotifications}
+                  markAdminOrdersSeen={markAdminOrdersSeen}
+                  markAdminCustomersSeen={markAdminCustomersSeen}
                 />
               ) : (
                 <Navigate to="/admin/login" />
@@ -180,7 +194,7 @@ function AppContent({
           />
         </Routes>
       </div>
-      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && !isLoginOrRegister && <Footer />}
     </div>
   );
 }

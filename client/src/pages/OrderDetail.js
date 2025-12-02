@@ -61,11 +61,29 @@ export default function OrderDetail() {
   const detailColProps = useMemo(() => (isInstallmentOrder ? { lg: 6 } : { lg: 12 }), [isInstallmentOrder]);
 
   const shippingInfo = useMemo(() => {
+    if (!order) {
+      return {
+        name: '-',
+        phone: '-',
+        address: '-',
+        telLink: ''
+      };
+    }
+
+    // ใช้ข้อมูลจาก customer ก่อน (customer_fname, customer_lname, customer_tel)
+    const customerName = [order.customer_fname, order.customer_lname].filter(Boolean).join(' ').trim();
+    const customerPhone = typeof order.customer_tel === 'string' ? order.customer_tel.trim() : '';
+
+    // ถ้าไม่มีข้อมูลจาก customer ให้ใช้ข้อมูลจาก shipping_address
     const shipping = order?.shipping_address || {};
-    const name = [shipping.recipientName, shipping.recipientSurname].filter(Boolean).join(' ').trim();
-    const phone = typeof shipping.phone === 'string' ? shipping.phone.trim() : '';
-    const address = typeof shipping.address === 'string' ? shipping.address.trim() : '';
-    const telLink = phone ? phone.replace(/[^0-9+]/g, '') : '';
+    const shippingName = [shipping.recipientName, shipping.recipientSurname].filter(Boolean).join(' ').trim();
+    const shippingPhone = typeof shipping.phone === 'string' ? shipping.phone.trim() : '';
+
+    const name = customerName || shippingName || '-';
+    const phone = customerPhone || shippingPhone || '-';
+    const address = typeof shipping.address === 'string' ? shipping.address.trim() : '-';
+    const telLink = phone && phone !== '-' ? phone.replace(/[^0-9+]/g, '') : '';
+
     return {
       name: name || '-',
       phone: phone || '-',
@@ -266,6 +284,14 @@ export default function OrderDetail() {
                       <dt className="col-sm-5">สถานะล่าสุด</dt>
                       <dd className="col-sm-7">
                         {statusConfig[order.order_status]?.text || order.order_status}
+                        {order.order_status === 'cancelled' && order.cancel_reason && (
+                          <div className="mt-2">
+                            <Alert variant="danger" className="mb-0" style={{ fontSize: '0.9rem' }}>
+                              <strong>สาเหตุการยกเลิก:</strong>
+                              <div className="mt-1">{order.cancel_reason}</div>
+                            </Alert>
+                          </div>
+                        )}
                       </dd>
                     </dl>
                   </Card.Body>
@@ -296,7 +322,7 @@ export default function OrderDetail() {
                         {shippingInfo.address !== '-' ? (
                           <span className="order-detail__shipping-address">{shippingInfo.address}</span>
                         ) : (
-                          <span className="text-muted">ยังไม่ได้ระบุที่อยู่จัดส่ง</span>
+                          <span style={{ color: '#000', fontSize: '1.1rem' }}>ยังไม่ได้ระบุที่อยู่จัดส่ง</span>
                         )}
                       </dd>
                     </dl>

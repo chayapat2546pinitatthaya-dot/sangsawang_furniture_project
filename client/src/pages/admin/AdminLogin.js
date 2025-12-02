@@ -47,7 +47,7 @@ export default function AdminLogin({ login }) {
   return (
     <div className="login-page" style={{ 
       minHeight: '100vh', 
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: '#f6f1e6',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -57,21 +57,21 @@ export default function AdminLogin({ login }) {
         <Row className="justify-content-center">
           <Col lg={5} md={6}>
             <Card style={{ 
-              backgroundColor: '#2c3e50', 
+              backgroundColor: '#ffffff', 
               border: 'none',
               borderRadius: '15px',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+              boxShadow: '0 10px 30px rgba(58, 47, 39, 0.12)'
             }}>
               <Card.Body style={{ padding: '40px' }}>
                 {/* Header Icons */}
                 <div className="text-center mb-4">
-                  <i className="bi bi-shield-lock" style={{ fontSize: '32px', color: '#fff' }}></i>
+                  <i className="bi bi-shield-lock" style={{ fontSize: '32px', color: '#b7895b' }}></i>
                 </div>
 
-                <h2 className="text-center mb-2" style={{ color: '#fff', fontSize: '32px', fontWeight: 'bold' }}>
-                  สังเกส่อง แอดมิน
+                <h2 className="text-center mb-2" style={{ color: '#3a2f27', fontSize: '32px', fontWeight: 'bold' }}>
+                  แสงสว่าง แอดมิน
                 </h2>
-                <p className="text-center mb-4" style={{ color: '#bdc3c7', fontSize: '14px' }}>
+                <p className="text-center mb-4" style={{ color: '#796b60', fontSize: '14px' }}>
                   เข้าสู่ระบบเพื่อจัดการระบบ
                 </p>
                 
@@ -95,7 +95,8 @@ export default function AdminLogin({ login }) {
                         border: 'none',
                         borderRadius: '10px',
                         padding: '15px',
-                        fontSize: '16px'
+                        fontSize: '16px',
+                        boxShadow: '0 2px 8px rgba(58, 47, 39, 0.08)'
                       }}
                     />
                   </Form.Group>
@@ -106,7 +107,7 @@ export default function AdminLogin({ login }) {
                         backgroundColor: '#fff',
                         borderRadius: '12px',
                         overflow: 'hidden',
-                        boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.08)'
+                        boxShadow: '0 2px 8px rgba(58, 47, 39, 0.08)'
                       }}
                     >
                       <Form.Control
@@ -130,7 +131,7 @@ export default function AdminLogin({ login }) {
                         style={{
                           border: 'none',
                           background: 'transparent',
-                          color: '#b58a5b',
+                          color: '#b7895b',
                           fontSize: '20px',
                           padding: '0 18px'
                         }}
@@ -141,17 +142,18 @@ export default function AdminLogin({ login }) {
                   </Form.Group>
 
                   <Button
-                    variant="dark"
+                    variant="primary"
                     type="submit"
                     className="w-100 mb-3"
                     disabled={isLoading}
                     style={{
-                      backgroundColor: '#000',
+                      background: 'linear-gradient(125deg, #b7895b 0%, #cf9356 110%)',
                       border: 'none',
                       borderRadius: '10px',
                       padding: '15px',
                       fontSize: '18px',
-                      fontWeight: 'bold'
+                      fontWeight: 'bold',
+                      color: '#fff'
                     }}
                   >
                     {isLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
@@ -160,12 +162,14 @@ export default function AdminLogin({ login }) {
 
                 <div className="d-flex justify-content-center mt-3">
                   <Button
-                    variant="outline-light"
+                    variant="outline-secondary"
                     onClick={() => navigate('/login')}
                     style={{
                       borderRadius: '10px',
                       padding: '12px 20px',
-                      fontSize: '14px'
+                      fontSize: '14px',
+                      borderColor: '#b7895b',
+                      color: '#b7895b'
                     }}
                   >
                     เข้าสู่ระบบลูกค้า

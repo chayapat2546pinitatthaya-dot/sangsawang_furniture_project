@@ -255,17 +255,79 @@ export default function Home() {
               <p className="home-hero-tagline">เฟอร์นิเจอร์คุณภาพดี ราคาสบายใจ</p>
               <h1>แสงสว่าง เฟอร์นิเจอร์</h1>
               <p className="home-hero-subtitle">
-                ครบทุกหมวดหมู่ สำหรับทุกพื้นที่ในบ้าน พร้อมบริการคำปรึกษาและการผ่อนชำระที่ยืดหยุ่น
+                คัดสรรดีไซน์เหนือกาลเวลา สร้างพื้นที่แห่งความสุขให้บ้านคุณ
               </p>
               <button
                 type="button"
                 className="home-hero-cta"
                 onClick={() => goToCatalog({ category: null, resetSearch: true })}
               >
+                <i className="bi bi-cart3"></i>
                 ดูสินค้าทั้งหมด
               </button>
             </div>
             <div className="home-hero-image" role="presentation" />
+          </div>
+
+          {/* ส่วนโปรโมทการผ่อนชำระและพื้นที่จัดส่งฟรี */}
+          <div className="home-hero-ads">
+            <div className="home-hero-ads-container">
+              {/* ส่วนโปรโมทการผ่อนชำระ */}
+              <div className="home-hero-promo-card">
+                <h2 className="home-promo-title">ไม่ใช้บัตรเครดิต! บัตรประชาชนใบเดียวก็ผ่อนได้</h2>
+                <p className="home-promo-description">
+                  <strong>ขายออนไลน์เท่านั้น</strong> - ผ่อนง่าย อนุมัติไว เพียงแค่บัตรประชาชนใบเดียว
+                  <br />
+                  ไม่ต้องมีบัตรเครดิต ไม่ต้องมีหลักทรัพย์ค้ำประกัน
+                  <br />
+                  เลือกแบ่งจ่ายได้สูงสุด 12 เดือน
+                </p>
+                <p className="home-promo-note">
+                  <strong>หมายเหตุ:</strong> เราไม่รับบัตรเครดิตในการชำระเงิน
+                </p>
+                <div className="home-promo-features">
+                  <div className="home-promo-feature">
+                    <span className="home-promo-check">✅</span>
+                    <span>อนุมัติไว ไม่ต้องรอนาน</span>
+                  </div>
+                  <div className="home-promo-feature">
+                    <span className="home-promo-check">✅</span>
+                    <span>เอกสารน้อย ง่ายต่อการสมัคร</span>
+                  </div>
+                  <div className="home-promo-feature">
+                    <span className="home-promo-check">✅</span>
+                    <span>ผ่อนได้สูงสุด <strong className="home-promo-highlight">12 เดือน</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              {/* ส่วนพื้นที่จัดส่งฟรี */}
+              <div className="home-hero-delivery-card">
+                <h2 className="home-delivery-title">
+                  พื้นที่จัดส่งฟรี
+                </h2>
+                <p className="home-delivery-description">
+                  เราจัดส่งฟรีในพื้นที่ดังต่อไปนี้:
+                </p>
+                <ul className="home-delivery-list">
+                  <li className="home-delivery-list-item">
+                    <strong>กรุงเทพมหานคร</strong>
+                    <span>ทุกเขตในกรุงเทพมหานคร</span>
+                  </li>
+                  <li className="home-delivery-list-item">
+                    <strong>ปริมณฑล</strong>
+                    <span>นนทบุรี, ปทุมธานี, สมุทรปราการ, สมุทรสาคร, นครปฐม, ฉะเชิงเทรา</span>
+                  </li>
+                  <li className="home-delivery-list-item">
+                    <strong>จังหวัดใกล้เคียง</strong>
+                    <span>อยุธยา, สระบุรี, ลพบุรี, ชลบุรี, ระยอง</span>
+                  </li>
+                </ul>
+                <p className="home-delivery-note">
+                  * สำหรับพื้นที่อื่นๆ กรุณาติดต่อสอบถามเพิ่มเติม
+                </p>
+              </div>
+            </div>
           </div>
         </section>
       )}

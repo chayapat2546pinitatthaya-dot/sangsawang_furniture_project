@@ -102,20 +102,23 @@
 
 .order-detail__summary-card dt {
   font-weight: 600;
-  color: rgba(72, 52, 36, 0.9);
+  color: #000;
+  font-size: 1.1rem;
 }
 
 .order-detail__summary-card dd {
   margin-bottom: 16px;
-  color: rgba(43, 33, 24, 0.8);
+  color: #000;
+  font-size: 1.1rem;
   display: flex;
   align-items: center;
 }
 
 .order-detail__contact-link {
-  color: rgba(72, 52, 36, 0.85);
+  color: #000;
   text-decoration: none;
   font-weight: 600;
+  font-size: 1.1rem;
 }
 
 .order-detail__contact-link:hover {
@@ -130,6 +133,8 @@
   background: rgba(247, 230, 207, 0.35);
   border: 1px solid rgba(203, 164, 116, 0.25);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  color: #000;
+  font-size: 1.1rem;
 }
 
 .order-detail__summary-card dd:last-child {

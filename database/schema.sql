@@ -126,16 +126,18 @@ CREATE TABLE `customer` (
   `customer_alt_addresses` text DEFAULT NULL,
   `email_verified` tinyint(1) NOT NULL DEFAULT 0,
   `email_verification_token` varchar(255) DEFAULT NULL,
-  `email_verification_expires` datetime DEFAULT NULL
+  `email_verification_expires` datetime DEFAULT NULL,
+  `password_reset_token` varchar(255) DEFAULT NULL,
+  `password_reset_expires` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `customer`
 --
 
-INSERT INTO `customer` (`customer_id`, `customer_username`, `customer_password`, `customer_fname`, `customer_lname`, `customer_email`, `customer_tel`, `customer_address`, `created_at`, `updated_at`, `customer_alt_addresses`, `email_verified`, `email_verification_token`, `email_verification_expires`) VALUES
-(1, 'customer1', '$2a$10$1p7SM1UFYHNWH42ai/KdUeVj.V.emw3WOG7ZjfDBxIGrd.H.EvseW', 'สมชาย', 'ใจดี', 'somchai@sangsawang.com', '08-123-4567', '123 ถนนสุขุมวิท กรุงเทพฯ 10110', '2025-11-06 15:23:52', '2025-11-12 14:37:59', NULL, 0, NULL, NULL),
-(2, 'customer2', '$2a$10$1p7SM1UFYHNWH42ai/KdUeVj.V.emw3WOG7ZjfDBxIGrd.H.EvseW', 'สมหญิง', 'รวยมาก', 'somying@sangsawang.com', '08-765-4321', '456 ถนนพหลโยธิน กรุงเทพฯ 10400', '2025-11-06 15:23:52', '2025-11-12 14:37:59', NULL, 0, NULL, NULL);
+INSERT INTO `customer` (`customer_id`, `customer_username`, `customer_password`, `customer_fname`, `customer_lname`, `customer_email`, `customer_tel`, `customer_address`, `created_at`, `updated_at`, `customer_alt_addresses`, `email_verified`, `email_verification_token`, `email_verification_expires`, `password_reset_token`, `password_reset_expires`) VALUES
+(1, 'customer1', '$2a$10$1p7SM1UFYHNWH42ai/KdUeVj.V.emw3WOG7ZjfDBxIGrd.H.EvseW', 'สมชาย', 'ใจดี', 'somchai@sangsawang.com', '08-123-4567', '123 ถนนสุขุมวิท กรุงเทพฯ 10110', '2025-11-06 15:23:52', '2025-11-12 14:37:59', NULL, 0, NULL, NULL, NULL, NULL),
+(2, 'customer2', '$2a$10$1p7SM1UFYHNWH42ai/KdUeVj.V.emw3WOG7ZjfDBxIGrd.H.EvseW', 'สมหญิง', 'รวยมาก', 'somying@sangsawang.com', '08-765-4321', '456 ถนนพหลโยธิน กรุงเทพฯ 10400', '2025-11-06 15:23:52', '2025-11-12 14:37:59', NULL, 0, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 

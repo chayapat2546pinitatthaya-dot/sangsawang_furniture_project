@@ -9,8 +9,10 @@ import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
 import Form from 'react-bootstrap/Form';
+import Alert from 'react-bootstrap/Alert';
 import axios from 'axios';
 import AdminHeader from '../../components/AdminHeader';
+import NotificationBell from '../../components/NotificationBell';
 import './AdminDashboard.css';
 
 const STATUS_MAP = {
@@ -62,12 +64,40 @@ export default function AdminDashboard({
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isSlidePanelOpen, setIsSlidePanelOpen] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [previousPendingCount, setPreviousPendingCount] = useState(0);
+  const [previousCustomersCount, setPreviousCustomersCount] = useState(0);
+  const [alerts, setAlerts] = useState([]);
+
+  const playNotificationSound = () => {
+    try {
+      // สร้างเสียงเตือนแบบ beep
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800; // ความถี่เสียง
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.log('ไม่สามารถเล่นเสียงเตือนได้:', error);
+    }
+  };
 
   useEffect(() => {
     fetchDashboardData();
     const interval = setInterval(fetchDashboardData, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // ไม่แสดง popup alerts แล้ว ใช้ notification bell แทน
 
   const fetchDashboardData = async () => {
     try {
@@ -111,6 +141,33 @@ export default function AdminDashboard({
       // Filter pending orders
       const pendingOrdersList = allOrders.filter((order) => order.order_status === 'pending');
 
+      // ตรวจสอบข้อมูลใหม่
+      if (!isLoading && previousPendingCount > 0) {
+        if (pendingOrdersList.length > previousPendingCount) {
+          const newCount = pendingOrdersList.length - previousPendingCount;
+          playNotificationSound();
+          setAlerts(prev => [...prev, {
+            id: Date.now(),
+            type: 'info',
+            message: `มีคำสั่งซื้อใหม่ ${newCount} รายการที่รออนุมัติ`,
+            timestamp: new Date()
+          }]);
+        }
+      }
+
+      if (!isLoading && previousCustomersCount > 0) {
+        if (allCustomers.length > previousCustomersCount) {
+          const newCount = allCustomers.length - previousCustomersCount;
+          playNotificationSound();
+          setAlerts(prev => [...prev, {
+            id: Date.now() + 1,
+            type: 'success',
+            message: `มีลูกค้าใหม่ ${newCount} คน`,
+            timestamp: new Date()
+          }]);
+        }
+      }
+
       setStats({
         todayRevenue,
         todayOrders: todayOrders.length,
@@ -127,6 +184,8 @@ export default function AdminDashboard({
         })
       );
 
+      setPreviousPendingCount(pendingOrdersList.length);
+      setPreviousCustomersCount(allCustomers.length);
       setLastFetchedAt(new Date());
       setIsLoading(false);
     } catch (error) {
@@ -208,6 +267,16 @@ export default function AdminDashboard({
     );
   };
 
+  // Auto-remove alerts after 5 seconds
+  useEffect(() => {
+    if (alerts.length > 0) {
+      const timer = setTimeout(() => {
+        setAlerts(prev => prev.slice(1));
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [alerts]);
+
   const kpiCards = useMemo(
     () => [
       {
@@ -273,6 +342,12 @@ export default function AdminDashboard({
         onLogout={logout}
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={toggleSidebar}
+        adminNotifications={adminNotifications}
+        markAdminOrdersSeen={markAdminOrdersSeen}
+        markAdminCustomersSeen={markAdminCustomersSeen}
+      />
+
+      <NotificationBell
         adminNotifications={adminNotifications}
         markAdminOrdersSeen={markAdminOrdersSeen}
         markAdminCustomersSeen={markAdminCustomersSeen}

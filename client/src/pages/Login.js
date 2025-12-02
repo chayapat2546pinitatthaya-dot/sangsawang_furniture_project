@@ -34,6 +34,9 @@ export default function Login({ login }) {
         username: state.email
       }));
     }
+    if (state?.passwordReset) {
+      setInfoMessage('รีเซ็ตรหัสผ่านสำเร็จแล้ว กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่');
+    }
   }, [location.state]);
 
   const handleChange = (e) => {
@@ -246,7 +249,7 @@ export default function Login({ login }) {
               <button
                 type="button"
                 className="login-secondary-btn"
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/forgot-password')}
               >
                 ลืมรหัสผ่าน
               </button>

@@ -668,12 +668,24 @@ const setOrderStatus = async (orderId, desiredStatus, options = {}) => {
         };
     }
 
-    await pool.execute('UPDATE `order` SET order_status = ? WHERE order_id = ?', [
-        normalizedTargetStatus,
-        orderId
-    ]);
+    // ถ้าเป็นสถานะ cancelled และมี cancel_reason ให้บันทึกด้วย
+    const cancelReason = options?.cancel_reason || null;
+    if (normalizedTargetStatus === 'cancelled' && cancelReason) {
+        await pool.execute(
+            'UPDATE `order` SET order_status = ?, cancel_reason = ? WHERE order_id = ?',
+            [normalizedTargetStatus, cancelReason, orderId]
+        );
+    } else {
+        await pool.execute('UPDATE `order` SET order_status = ? WHERE order_id = ?', [
+            normalizedTargetStatus,
+            orderId
+        ]);
+    }
 
     order.order_status = normalizedTargetStatus;
+    if (cancelReason) {
+        order.cancel_reason = cancelReason;
+    }
 
     if (sendNotification && normalizedTargetStatus === 'awaiting_payment') {
         try {
@@ -1159,6 +1171,118 @@ app.put('/api/customer/password', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Update password error:', error);
         res.status(500).json({ error: 'มีข้อผิดพลาดในการเปลี่ยนรหัสผ่าน' });
+    }
+});
+
+// Forgot Password - Reset password directly
+app.post('/api/customer/forgot-password', async (req, res) => {
+    try {
+        const { email, username, password } = req.body;
+
+        console.log('Forgot password request:', { email, username, hasPassword: !!password });
+
+        if (!email || !username || !password) {
+            return res.status(400).json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ error: 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร' });
+        }
+
+        // ตรวจสอบว่าอีเมลและ username ตรงกัน
+        const [users] = await pool.execute(
+            'SELECT customer_id, customer_email, customer_username FROM customer WHERE customer_email = ? AND customer_username = ?',
+            [email.trim(), username.trim()]
+        );
+
+        console.log('Found users:', users.length);
+
+        if (users.length === 0) {
+            return res.status(404).json({ error: 'ไม่พบข้อมูลที่ตรงกัน กรุณาตรวจสอบอีเมลและชื่อผู้ใช้' });
+        }
+
+        const user = users[0];
+        console.log('User found:', user.customer_id);
+        
+        // Hash password ใหม่
+        const hashedPassword = await bcrypt.hash(password, 10);
+        console.log('Password hashed');
+
+        // อัปเดตรหัสผ่าน (ไม่ต้องอัปเดต password_reset_token ถ้าไม่มี field)
+        try {
+            await pool.execute(
+                'UPDATE customer SET customer_password = ? WHERE customer_id = ?',
+                [hashedPassword, user.customer_id]
+            );
+            console.log('Password updated successfully');
+        } catch (updateError) {
+            // ถ้าไม่มี password_reset_token fields ก็อัปเดตแค่ password
+            console.log('Trying without reset token fields...');
+            await pool.execute(
+                'UPDATE customer SET customer_password = ? WHERE customer_id = ?',
+                [hashedPassword, user.customer_id]
+            );
+        }
+
+        res.json({ 
+            message: 'รีเซ็ตรหัสผ่านสำเร็จ'
+        });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        console.error('Error details:', {
+            message: error.message,
+            sql: error.sql,
+            code: error.code
+        });
+        const errorMessage = error.sqlMessage || error.message || 'ไม่สามารถรีเซ็ตรหัสผ่านได้';
+        res.status(500).json({ error: errorMessage });
+    }
+});
+
+// Reset Password - Reset with token
+app.post('/api/customer/reset-password', async (req, res) => {
+    try {
+        const { token, password } = req.body;
+
+        if (!token || !password) {
+            return res.status(400).json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ error: 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร' });
+        }
+
+        // ตรวจสอบ token และวันหมดอายุ
+        const [users] = await pool.execute(
+            'SELECT customer_id, password_reset_expires FROM customer WHERE password_reset_token = ?',
+            [token]
+        );
+
+        if (users.length === 0) {
+            return res.status(400).json({ error: 'Token ไม่ถูกต้องหรือหมดอายุแล้ว' });
+        }
+
+        const user = users[0];
+        const now = new Date();
+        const expiresAt = new Date(user.password_reset_expires);
+
+        if (now > expiresAt) {
+            return res.status(400).json({ error: 'Token หมดอายุแล้ว กรุณาขอลิงก์ใหม่' });
+        }
+
+        // Hash password ใหม่
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // อัปเดตรหัสผ่านและลบ token
+        await pool.execute(
+            'UPDATE customer SET customer_password = ?, password_reset_token = NULL, password_reset_expires = NULL WHERE customer_id = ?',
+            [hashedPassword, user.customer_id]
+        );
+
+        res.json({ message: 'รีเซ็ตรหัสผ่านสำเร็จ' });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ error: 'ไม่สามารถรีเซ็ตรหัสผ่านได้' });
     }
 });
 
@@ -1965,12 +2089,20 @@ app.get('/api/customer/orders', authenticateToken, async (req, res) => {
 
 app.put('/api/orders/:id/status', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const { status } = req.body || {};
+        const { status, cancel_reason } = req.body || {};
         if (!status) {
             return res.status(400).json({ error: 'กรุณาระบุสถานะใหม่' });
         }
 
-        const result = await setOrderStatus(req.params.id, status, { sendNotification: true });
+        // ตรวจสอบว่าถ้าเป็น cancelled ต้องมี cancel_reason
+        if (status === 'cancelled' && !cancel_reason) {
+            return res.status(400).json({ error: 'กรุณากรอกสาเหตุการยกเลิก' });
+        }
+
+        const result = await setOrderStatus(req.params.id, status, { 
+            sendNotification: true,
+            cancel_reason: cancel_reason || null
+        });
 
         if (!result.success) {
             if (result.code === 'NOT_FOUND') {

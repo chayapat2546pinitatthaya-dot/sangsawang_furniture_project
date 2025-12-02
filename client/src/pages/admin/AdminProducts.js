@@ -10,6 +10,7 @@ import Form from 'react-bootstrap/Form';
 import Alert from 'react-bootstrap/Alert';
 import axios from 'axios';
 import AdminHeader from '../../components/AdminHeader';
+import NotificationBell from '../../components/NotificationBell';
 import './AdminProducts.css';
 
 const formatPrice = (value) => {
@@ -213,6 +214,31 @@ export default function AdminProducts({
   const [sortBy, setSortBy] = useState('newest');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState(new Set());
+  const [previousProductsCount, setPreviousProductsCount] = useState(0);
+  const [alerts, setAlerts] = useState([]);
+
+  const playNotificationSound = () => {
+    try {
+      // สร้างเสียงเตือนแบบ beep
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800; // ความถี่เสียง
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.log('ไม่สามารถเล่นเสียงเตือนได้:', error);
+    }
+  };
   const autoInstallmentPrice = useMemo(
     () => calculateInstallmentPrice(formData.priceCash),
     [formData.priceCash]
@@ -260,6 +286,8 @@ export default function AdminProducts({
     fetchCategories();
   }, []);
 
+  // ไม่แสดง popup alerts แล้ว ใช้ notification bell แทน
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const action = params.get('action');
@@ -291,7 +319,20 @@ export default function AdminProducts({
   const fetchProducts = async () => {
     try {
       const response = await axios.get('/api/products');
-      const normalized = response.data.map((item) => {
+      const newProducts = response.data || [];
+      
+      // ตรวจสอบว่ามีสินค้าใหม่หรือไม่
+      if (previousProductsCount > 0 && !isLoading && newProducts.length > previousProductsCount) {
+        const newCount = newProducts.length - previousProductsCount;
+        setAlerts(prev => [...prev, {
+          id: Date.now(),
+          type: 'info',
+          message: `มีสินค้าใหม่ ${newCount} รายการ`,
+          timestamp: new Date()
+        }]);
+      }
+      
+      const normalized = newProducts.map((item) => {
         const images = Array.isArray(item.product_images)
           ? item.product_images
               .map((img) => (img == null ? '' : String(img).trim()))
@@ -314,7 +355,21 @@ export default function AdminProducts({
           highlights: Array.isArray(item.highlights) ? item.highlights : []
         };
       });
+      
+      // ตรวจสอบว่ามีสินค้าใหม่หรือไม่
+      if (previousProductsCount > 0 && !isLoading && normalized.length > previousProductsCount) {
+        const newCount = normalized.length - previousProductsCount;
+        playNotificationSound();
+        setAlerts(prev => [...prev, {
+          id: Date.now(),
+          type: 'info',
+          message: `มีสินค้าใหม่ ${newCount} รายการ`,
+          timestamp: new Date()
+        }]);
+      }
+      
       setProducts(normalized);
+      setPreviousProductsCount(normalized.length);
       // setActiveCategory((prev) => { // This line is removed as per the edit hint
       //   if (prev === 'all') {
       //     return prev;
@@ -799,6 +854,16 @@ export default function AdminProducts({
   const categoryCount = categoryProducts.length;
   const filteredCount = filteredProducts.length;
 
+  // Auto-remove alerts after 5 seconds
+  useEffect(() => {
+    if (alerts.length > 0) {
+      const timer = setTimeout(() => {
+        setAlerts(prev => prev.slice(1));
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [alerts]);
+
   return (
     <div className="admin-products-page">
       <AdminHeader
@@ -806,6 +871,11 @@ export default function AdminProducts({
         onLogout={logout}
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={toggleSidebar}
+        adminNotifications={adminNotifications}
+        markAdminOrdersSeen={markAdminOrdersSeen}
+        markAdminCustomersSeen={markAdminCustomersSeen}
+      />
+      <NotificationBell
         adminNotifications={adminNotifications}
         markAdminOrdersSeen={markAdminOrdersSeen}
         markAdminCustomersSeen={markAdminCustomersSeen}

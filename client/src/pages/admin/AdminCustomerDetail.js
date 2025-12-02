@@ -13,6 +13,7 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import axios from 'axios';
 import AdminHeader from '../../components/AdminHeader';
+import NotificationBell from '../../components/NotificationBell';
 import './AdminCustomerDetail.css';
 
 const formatCurrency = (value) => {
@@ -110,7 +111,15 @@ const PROMOTION_FILTER_OPTIONS = [
   { key: 'regular', label: 'ไม่มีโปรฯ' }
 ];
 
-export default function AdminCustomerDetail({ admin, logout, isSidebarCollapsed, toggleSidebar }) {
+export default function AdminCustomerDetail({ 
+  admin, 
+  logout, 
+  isSidebarCollapsed, 
+  toggleSidebar,
+  adminNotifications = {},
+  markAdminOrdersSeen,
+  markAdminCustomersSeen
+}) {
   const { customerId } = useParams();
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -345,6 +354,11 @@ export default function AdminCustomerDetail({ admin, logout, isSidebarCollapsed,
         onLogout={logout}
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={toggleSidebar}
+      />
+      <NotificationBell
+        adminNotifications={adminNotifications}
+        markAdminOrdersSeen={markAdminOrdersSeen}
+        markAdminCustomersSeen={markAdminCustomersSeen}
       />
       <Container className="py-5">
         <div className="detail-topbar mb-4">

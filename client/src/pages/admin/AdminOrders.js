@@ -6,8 +6,10 @@ import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import Form from 'react-bootstrap/Form';
+import Modal from 'react-bootstrap/Modal';
 import axios from 'axios';
 import AdminHeader from '../../components/AdminHeader';
+import NotificationBell from '../../components/NotificationBell';
 import './AdminOrders.css';
 
 const ORDER_STATUS_OPTIONS = [
@@ -58,6 +60,11 @@ export default function AdminOrders({
   const notifications = [];
   const [expandedOrders, setExpandedOrders] = useState(new Set());
   const [toasts, setToasts] = useState([]);
+  const [previousOrdersCount, setPreviousOrdersCount] = useState(0);
+  const [previousOrdersIds, setPreviousOrdersIds] = useState(new Set());
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelOrderId, setCancelOrderId] = useState(null);
+  const [cancelReason, setCancelReason] = useState('');
   
   const initialMonthYear = getInitialMonthYear();
   const [selectedMonth, setSelectedMonth] = useState(initialMonthYear.month);
@@ -99,6 +106,7 @@ export default function AdminOrders({
     return () => clearInterval(interval);
   }, []);
 
+
   // Sync filter จาก URL query params (เมื่อ component mount หรือ URL เปลี่ยนจากภายนอก)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -126,7 +134,17 @@ export default function AdminOrders({
   const fetchOrders = async () => {
     try {
       const response = await axios.get('/api/orders');
-      setOrders(response.data);
+      const newOrders = response.data;
+      
+      // ตรวจสอบว่ามีออเดอร์ใหม่หรือไม่ (ไม่แสดง popup)
+      if (previousOrdersIds.size > 0 && !isLoading) {
+        const newOrderIds = new Set(newOrders.map(o => o.order_id));
+        // อัปเดต previousOrdersIds โดยไม่แสดง popup
+      }
+      
+      setOrders(newOrders);
+      setPreviousOrdersIds(new Set(newOrders.map(o => o.order_id)));
+      setPreviousOrdersCount(newOrders.length);
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -170,16 +188,44 @@ export default function AdminOrders({
     }));
   };
 
-  const showToast = (message, variant = 'success') => {
+  const playNotificationSound = () => {
+    try {
+      // สร้างเสียงเตือนแบบ beep
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800; // ความถี่เสียง
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.log('ไม่สามารถเล่นเสียงเตือนได้:', error);
+    }
+  };
+
+  const showToast = (message, variant = 'success', playSound = false) => {
     const id = Date.now();
     const toast = { id, message, variant };
     setToasts((prev) => [...prev, toast]);
+    
+    if (playSound) {
+      playNotificationSound();
+    }
+    
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4000);
   };
 
-  const handleStatusUpdate = async (orderId) => {
+  const handleStatusUpdate = async (orderId, reason = null) => {
     const targetOrder = orders.find((order) => order.order_id === orderId);
     if (!targetOrder) {
       return;
@@ -191,9 +237,21 @@ export default function AdminOrders({
       return;
     }
 
+    // ถ้าเลือกสถานะ cancelled ให้แสดง modal เพื่อกรอกสาเหตุ
+    if (nextStatus === 'cancelled' && !reason) {
+      setCancelOrderId(orderId);
+      setShowCancelModal(true);
+      return;
+    }
+
     setSavingStatusId(orderId);
     try {
-      await axios.put(`/api/orders/${orderId}/status`, { status: nextStatus });
+      const payload = { status: nextStatus };
+      if (nextStatus === 'cancelled' && reason) {
+        payload.cancel_reason = reason;
+      }
+      
+      await axios.put(`/api/orders/${orderId}/status`, payload);
       const statusLabel = ORDER_STATUS_OPTIONS.find((opt) => opt.value === nextStatus)?.label || nextStatus;
       showToast(`คำสั่งซื้อ #${orderId} เปลี่ยนสถานะเป็น "${statusLabel}" เรียบร้อยแล้ว`, 'success');
       setStatusDrafts((prev) => {
@@ -212,6 +270,19 @@ export default function AdminOrders({
       showToast(errorMessage, 'danger');
     } finally {
       setSavingStatusId(null);
+      setShowCancelModal(false);
+      setCancelReason('');
+      setCancelOrderId(null);
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    if (!cancelReason.trim()) {
+      showToast('กรุณากรอกสาเหตุการยกเลิก', 'warning');
+      return;
+    }
+    if (cancelOrderId) {
+      handleStatusUpdate(cancelOrderId, cancelReason.trim());
     }
   };
 
@@ -598,16 +669,11 @@ export default function AdminOrders({
         markAdminOrdersSeen={markAdminOrdersSeen}
         markAdminCustomersSeen={markAdminCustomersSeen}
       />
-
-      {/* Notification Corner */}
-      <div className="admin-orders__notifications">
-        <button className="admin-orders__notification-btn" title="แจ้งเตือน">
-          <i className="bi bi-bell"></i>
-          {notifications.length > 0 && (
-            <span className="admin-orders__notification-badge">{notifications.length}</span>
-          )}
-        </button>
-      </div>
+      <NotificationBell
+        adminNotifications={adminNotifications}
+        markAdminOrdersSeen={markAdminOrdersSeen}
+        markAdminCustomersSeen={markAdminCustomersSeen}
+      />
 
       <div className="admin-orders__layout">
         <Container fluid className="admin-orders__container">
@@ -719,6 +785,33 @@ export default function AdminOrders({
               </div>
             ) : (
               <div className="admin-orders__cards">
+                {/* Header Row */}
+                <div className="admin-order-card__header-row">
+                  <div className="admin-order-card__id-col">
+                    <span className="admin-order-card__header-label">คำสั่งซื้อ</span>
+                  </div>
+                  <div className="admin-order-card__customer-col">
+                    <span className="admin-order-card__header-label">รายละเอียดลูกค้า</span>
+                  </div>
+                  <div className="admin-order-card__date-col">
+                    <span className="admin-order-card__header-label">วันที่</span>
+                  </div>
+                  <div className="admin-order-card__amount-col">
+                    <span className="admin-order-card__header-label">ราคา</span>
+                  </div>
+                  <div className="admin-order-card__installment-col">
+                    <span className="admin-order-card__header-label">งวด</span>
+                  </div>
+                  <div className="admin-order-card__status-col">
+                    <span className="admin-order-card__header-label">สถานะ</span>
+                  </div>
+                  <div className="admin-order-card__status-edit-col">
+                    <span className="admin-order-card__header-label">แก้ไขสถานะ</span>
+                  </div>
+                  <div className="admin-order-card__actions-col">
+                    <span className="admin-order-card__header-label">จัดการ</span>
+                  </div>
+                </div>
                 {sortedOrders.map((order, index) => {
                   const currentStatusValue = statusDrafts[order.order_id] ?? order.order_status;
                   const statusChanged = currentStatusValue !== order.order_status;
@@ -747,6 +840,11 @@ export default function AdminOrders({
                           <div className="admin-order-card__customer-name">
                             {order.customer_fname} {order.customer_lname}
                           </div>
+                          <span className="admin-order-card__separator">•</span>
+                          <div className="admin-order-card__customer-email">
+                            {order.customer_email || '-'}
+                          </div>
+                          <span className="admin-order-card__separator">•</span>
                           <div className="admin-order-card__customer-contact">
                             <span title="เบอร์โทร">
                               <i className="bi bi-telephone"></i>
@@ -766,44 +864,65 @@ export default function AdminOrders({
                         <div className="admin-order-card__status-col">
                           {getStatusBadge(order.order_status)}
                         </div>
+                        <div className="admin-order-card__status-edit-col">
+                          <div className="admin-order-card__status-editor-inline">
+                            <Form.Select
+                              size="sm"
+                              value={currentStatusValue}
+                              onChange={(e) =>
+                                handleStatusDraftChange(order.order_id, e.target.value)
+                              }
+                              className="admin-order-card__status-select-inline"
+                              style={{ minWidth: '140px', fontSize: '0.85rem' }}
+                            >
+                              {ORDER_STATUS_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </Form.Select>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              className="admin-order-card__status-save-inline"
+                              disabled={!statusChanged || savingStatusId === order.order_id}
+                              onClick={() => handleStatusUpdate(order.order_id)}
+                              style={{ minWidth: '60px', fontSize: '0.8rem', padding: '4px 8px' }}
+                            >
+                              {savingStatusId === order.order_id ? (
+                                <Spinner animation="border" size="sm" role="status">
+                                  <span className="visually-hidden">Saving...</span>
+                                </Spinner>
+                              ) : (
+                                <i className="bi bi-save"></i>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
                         <div className="admin-order-card__actions-col">
                           <div className="admin-order-card__quick-actions">
-                            {order.order_status === 'pending' && (
-                              <>
-                                <Button
-                                  variant="success"
-                                  size="sm"
-                                  onClick={() => handleApprove(order.order_id)}
-                                  title="อนุมัติ"
-                                >
-                                  <i className="bi bi-check-circle"></i>
-                                </Button>
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  onClick={() => handleReject(order.order_id)}
-                                  title="ไม่อนุมัติ"
-                                >
-                                  <i className="bi bi-x-circle"></i>
-                                </Button>
-                              </>
-                            )}
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              className="admin-order-card__view-btn"
-                              onClick={() => handleViewDetails(order.order_id)}
-                              title="ดูรายละเอียด"
-                            >
-                              <i className="bi bi-eye"></i>
-                            </Button>
-                            <button
-                              className="admin-order-card__expand-btn"
-                              onClick={() => toggleOrderExpand(order.order_id)}
-                              title={isExpanded ? 'ย่อรายละเอียด' : 'ขยายรายละเอียด'}
-                            >
-                              <i className={`bi bi-chevron-${isExpanded ? 'up' : 'down'}`}></i>
-                            </button>
+                            <div className="admin-order-card__action-item">
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                className="admin-order-card__view-btn"
+                                onClick={() => handleViewDetails(order.order_id)}
+                              >
+                                <i className="bi bi-eye"></i>
+                              </Button>
+                              <span className="admin-order-card__action-label">ดูรายละเอียด</span>
+                            </div>
+                            <div className="admin-order-card__action-item">
+                              <button
+                                className="admin-order-card__expand-btn"
+                                onClick={() => toggleOrderExpand(order.order_id)}
+                              >
+                                <i className={`bi bi-chevron-${isExpanded ? 'up' : 'down'}`}></i>
+                              </button>
+                              <span className="admin-order-card__action-label">
+                                {isExpanded ? 'ซ่อนที่อยู่' : 'ดูที่อยู่'}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -814,49 +933,34 @@ export default function AdminOrders({
                           <div className="admin-order-card__expandable-content">
                             <div className="admin-order-card__expandable-section">
                               <div className="admin-order-card__expandable-row">
-                                <span className="admin-order-card__expandable-label">อีเมล:</span>
-                                <span>{order.customer_email || '-'}</span>
-                              </div>
-                            </div>
-                            <div className="admin-order-card__expandable-section">
-                              <div className="admin-order-card__status-editor-compact">
-                                <div className="admin-order-card__status-change-compact">
-                                  <span className="admin-order-card__status-label-compact">เปลี่ยนสถานะ:</span>
-                                  <div className="admin-order-card__status-select-wrapper-compact">
-                                    <Form.Select
-                                      size="sm"
-                                      value={currentStatusValue}
-                                      onChange={(e) =>
-                                        handleStatusDraftChange(order.order_id, e.target.value)
+                                <span className="admin-order-card__expandable-label">ที่อยู่:</span>
+                                <span>
+                                  {(() => {
+                                    try {
+                                      const address = order.shipping_address 
+                                        ? (typeof order.shipping_address === 'string' 
+                                            ? JSON.parse(order.shipping_address) 
+                                            : order.shipping_address)
+                                        : null;
+                                      if (address) {
+                                        const parts = [];
+                                        if (address.recipientName || address.recipientSurname) {
+                                          parts.push(`${address.recipientName || ''} ${address.recipientSurname || ''}`.trim());
+                                        }
+                                        if (address.phone) {
+                                          parts.push(`โทร: ${address.phone}`);
+                                        }
+                                        if (address.address) {
+                                          parts.push(address.address);
+                                        }
+                                        return parts.length > 0 ? parts.join(' · ') : '-';
                                       }
-                                      className="admin-order-card__status-select-compact"
-                                    >
-                                      {ORDER_STATUS_OPTIONS.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                          {option.label}
-                                        </option>
-                                      ))}
-                                    </Form.Select>
-                                  </div>
-                                  <Button
-                                    variant="primary"
-                                    size="sm"
-                                    className="admin-order-card__status-save-compact"
-                                    disabled={!statusChanged || savingStatusId === order.order_id}
-                                    onClick={() => handleStatusUpdate(order.order_id)}
-                                  >
-                                    {savingStatusId === order.order_id ? (
-                                      <Spinner animation="border" size="sm" role="status">
-                                        <span className="visually-hidden">Saving...</span>
-                                      </Spinner>
-                                    ) : (
-                                      <>
-                                        <i className="bi bi-save me-1"></i>
-                                        บันทึก
-                                      </>
-                                    )}
-                                  </Button>
-                                </div>
+                                      return order.customer_address || '-';
+                                    } catch {
+                                      return order.shipping_address || order.customer_address || '-';
+                                    }
+                                  })()}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -969,6 +1073,14 @@ export default function AdminOrders({
                 <div className="admin-order-detail-status">
                   {getStatusBadge(selectedOrder.order_status)}
                 </div>
+                {selectedOrder.order_status === 'cancelled' && selectedOrder.cancel_reason && (
+                  <div className="mt-3">
+                    <Alert variant="warning" className="mb-0">
+                      <strong>สาเหตุการยกเลิก:</strong>
+                      <div className="mt-1">{selectedOrder.cancel_reason}</div>
+                    </Alert>
+                  </div>
+                )}
                 <div className="admin-order-detail-status-change">
                   <span className="admin-order-detail-status-label">เปลี่ยนเป็น</span>
                   <div className="admin-order-detail-status-select-wrapper">
@@ -1078,6 +1190,44 @@ export default function AdminOrders({
           onClick={handleCloseSlidePanel}
         ></div>
       )}
+
+      {/* Cancel Reason Modal */}
+      <Modal show={showCancelModal} onHide={() => {
+        setShowCancelModal(false);
+        setCancelReason('');
+        setCancelOrderId(null);
+      }} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>กรอกสาเหตุการยกเลิก</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group className="mb-3">
+            <Form.Label>สาเหตุการยกเลิกคำสั่งซื้อ</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={4}
+              placeholder="กรุณากรอกสาเหตุที่ยกเลิกคำสั่งซื้อนี้..."
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+            />
+            <Form.Text className="text-muted">
+              สาเหตุนี้จะแสดงให้ลูกค้าดู
+            </Form.Text>
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => {
+            setShowCancelModal(false);
+            setCancelReason('');
+            setCancelOrderId(null);
+          }}>
+            ยกเลิก
+          </Button>
+          <Button variant="danger" onClick={handleConfirmCancel} disabled={!cancelReason.trim()}>
+            ยืนยันการยกเลิก
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* Toast Notifications */}
       <div className="admin-orders__toast-container">

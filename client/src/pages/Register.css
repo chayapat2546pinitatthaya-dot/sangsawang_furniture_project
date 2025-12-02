@@ -28,22 +28,23 @@
   justify-content: center;
   gap: 14px;
   padding: clamp(26px, 5.4vw, 64px);
-  max-width: 480px;
+  max-width: 580px;
   color: #fff7ec;
 }
 
 .register-showcase-content h1 {
-  font-size: clamp(1.72rem, 3.2vw, 2.5rem);
-  line-height: 1.26;
+  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+  line-height: 1.35;
   font-weight: 600;
   color: #fffbf3;
-  white-space: nowrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .register-showcase-content p {
   color: rgba(255, 239, 218, 0.88);
-  font-size: 0.9rem;
-  line-height: 1.55;
+  font-size: 1.3rem;
+  line-height: 1.6;
 }
 
 .register-badge {
@@ -55,7 +56,7 @@
   background: rgba(255, 245, 230, 0.18);
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  font-size: 0.78rem;
+  font-size: 0.95rem;
   font-weight: 600;
 }
 
@@ -70,11 +71,12 @@
   align-items: center;
   gap: 12px;
   font-weight: 500;
+  font-size: 1.05rem;
   color: rgba(255, 244, 232, 0.9);
 }
 
 .register-showcase-meta i {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   color: #f8d9b6;
 }
 
@@ -88,13 +90,13 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: 1.25rem;
+  line-height: 1.6;
   color: rgba(255, 244, 232, 0.95);
 }
 
 .register-benefit-item i {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   color: #f8d9b6;
   flex-shrink: 0;
 }
@@ -111,7 +113,7 @@
 }
 
 .register-form-shell {
-  width: min(380px, 100%);
+  width: min(500px, 100%);
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -130,7 +132,7 @@
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  padding: clamp(20px, 3.6vw, 34px);
+  padding: clamp(28px, 4.2vw, 42px);
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -138,17 +140,24 @@
 
 .register-card-header {
   text-align: center;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .register-card-header h2 {
-  font-size: clamp(1.54rem, 2.6vw, 1.9rem);
-  color: var(--color-text);
+  font-size: clamp(1.8rem, 2.8vw, 2.2rem);
+  color: #000;
   margin-bottom: 8px;
+  line-height: 1.3;
 }
 
 .register-card-header p {
-  color: var(--color-text-muted);
-  font-size: 0.86rem;
+  color: #000;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  padding: 0 4px;
 }
 
 .register-alert {
@@ -200,8 +209,8 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  color: #000;
   font-weight: 500;
 }
 
@@ -226,7 +235,7 @@
   top: 50%;
   background: none;
   border: none;
-  color: var(--color-text-muted);
+  color: #000;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -251,9 +260,13 @@
   border-radius: var(--radius-md);
   border: 1px solid rgba(136, 96, 72, 0.22);
   background: var(--color-surface-muted);
-  font-size: 0.9rem;
-  color: var(--color-text);
+  font-size: 1.1rem;
+  color: #000;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.register-input::placeholder {
+  color: rgba(0, 0, 0, 0.5);
 }
 
 .register-input:focus {
@@ -299,20 +312,21 @@
 .register-secondary-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
   margin-top: 12px;
 }
 
 .register-secondary-btn {
-  padding: 9px 12px;
+  padding: 10px 14px;
   border-radius: var(--radius-md);
   border: 1px solid rgba(136, 96, 72, 0.28);
   background: var(--color-surface-muted);
-  color: var(--color-text);
+  color: #000;
   font-weight: 500;
-  font-size: 0.86rem;
+  font-size: 1.1rem;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
 }
 
 .register-secondary-btn:hover {

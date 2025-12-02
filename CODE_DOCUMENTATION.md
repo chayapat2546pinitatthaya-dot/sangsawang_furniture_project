@@ -43,7 +43,9 @@ Final-Project-main/
         ├── App.js               # Main App Component (Routing)
         ├── index.js             # React Entry Point
         ├── components/          # Reusable Components
+        │   ├── TopBar.js       # Top bar with contact info and social links
         │   ├── Navbar.js        # Navigation Bar
+        │   ├── Footer.js       # Footer component
         │   └── ...
         └── pages/               # Page Components
             ├── Home.js           # หน้าแรก
@@ -400,10 +402,24 @@ GET  /api/admin/customers/:id // ดูรายละเอียดลูก�
 
 #### 2. **Components**
 
+##### TopBar.js
+- Top bar component ที่แสดงด้านบนสุดของหน้าเว็บ
+- แสดงข้อมูลติดต่อ: โทรศัพท์ (081-820-0706) และอีเมล (sangsawang_furniture@gmail.com)
+- แสดงลิงก์โซเชียลมีเดีย: Facebook และ Line
+- มี QR Code dropdown สำหรับ Line และ Facebook
+- พื้นหลังสีขาว ตัวอักษรและ icon สีดำ
+- แสดงเฉพาะในหน้า non-admin routes
+- Responsive: ซ่อนข้อความ "ติดตามเราบน" ในหน้าจอเล็ก (max-width: 992px)
+
 ##### Navbar.js
 - Navigation bar ที่แสดงทุกหน้า
 - แสดงข้อมูลผู้ใช้ที่ login
 - มีเมนูแยกสำหรับ Customer และ Admin
+
+##### Footer.js
+- Footer component ที่แสดงด้านล่างสุดของหน้าเว็บ
+- แสดงข้อมูลติดต่อและลิงก์โซเชียลมีเดีย
+- ไม่แสดงในหน้า Login และ Register
 
 ##### Cards.js
 - Component สำหรับแสดงสินค้าเป็น card

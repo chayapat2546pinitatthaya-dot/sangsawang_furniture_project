@@ -10,8 +10,10 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Collapse from 'react-bootstrap/Collapse';
 import Table from 'react-bootstrap/Table';
+import Alert from 'react-bootstrap/Alert';
 import axios from 'axios';
 import AdminHeader from '../../components/AdminHeader';
+import NotificationBell from '../../components/NotificationBell';
 import './AdminCustomers.css';
 
 const formatCurrency = (value) => {
@@ -49,13 +51,53 @@ export default function AdminCustomers({
   const [statusFilter, setStatusFilter] = useState('all');
   const [expandedId, setExpandedId] = useState(null);
   const [expandedProducts, setExpandedProducts] = useState(new Map());
+  const [previousCustomersCount, setPreviousCustomersCount] = useState(0);
+  const [alerts, setAlerts] = useState([]);
+
+  const playNotificationSound = () => {
+    try {
+      // สร้างเสียงเตือนแบบ beep
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800; // ความถี่เสียง
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.log('ไม่สามารถเล่นเสียงเตือนได้:', error);
+    }
+  };
 
   useEffect(() => {
     const fetchCustomers = async () => {
       setIsLoading(true);
       try {
         const response = await axios.get('/api/admin/customers');
-        setCustomers(response.data || []);
+        const newCustomers = response.data || [];
+        
+        // ตรวจสอบว่ามีลูกค้าใหม่หรือไม่
+        if (previousCustomersCount > 0 && !isLoading && newCustomers.length > previousCustomersCount) {
+          const newCount = newCustomers.length - previousCustomersCount;
+          playNotificationSound();
+          setAlerts(prev => [...prev, {
+            id: Date.now(),
+            type: 'success',
+            message: `มีลูกค้าใหม่ ${newCount} คน`,
+            timestamp: new Date()
+          }]);
+        }
+        
+        setCustomers(newCustomers);
+        setPreviousCustomersCount(newCustomers.length);
       } catch (error) {
         console.error('Error loading customers:', error);
       } finally {
@@ -67,6 +109,8 @@ export default function AdminCustomers({
     const interval = setInterval(fetchCustomers, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // ไม่แสดง popup alerts แล้ว ใช้ notification bell แทน
 
   const stats = useMemo(() => {
     const totalCustomers = customers.length;
@@ -143,6 +187,11 @@ export default function AdminCustomers({
         onLogout={logout}
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={toggleSidebar}
+        adminNotifications={adminNotifications}
+        markAdminOrdersSeen={markAdminOrdersSeen}
+        markAdminCustomersSeen={markAdminCustomersSeen}
+      />
+      <NotificationBell
         adminNotifications={adminNotifications}
         markAdminOrdersSeen={markAdminOrdersSeen}
         markAdminCustomersSeen={markAdminCustomersSeen}

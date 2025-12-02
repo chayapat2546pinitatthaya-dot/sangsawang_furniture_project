@@ -278,7 +278,17 @@ export default function Orders() {
                     <td>{renderPaymentMethod(order)}</td>
                     <td>{renderInstallmentInfo(order)}</td>
                     <td>{renderMonthlyPayment(order)}</td>
-                    <td>{getStatusBadge(order.order_status)}</td>
+                    <td>
+                      <div>
+                        {getStatusBadge(order.order_status)}
+                        {order.order_status === 'cancelled' && order.cancel_reason && (
+                          <div className="mt-2">
+                            <small className="text-muted d-block">สาเหตุ:</small>
+                            <small className="text-danger">{order.cancel_reason}</small>
+                          </div>
+                        )}
+                      </div>
+                    </td>
                     <td>
                       <div className="orders-actions">
                         {order.order_status === 'awaiting_payment' && (
