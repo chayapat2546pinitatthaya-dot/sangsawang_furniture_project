@@ -1,0 +1,30 @@
+{
+  "name": "sangsawang-furniture",
+  "version": "1.0.0",
+  "description": "Website for Sangsawang Furniture with installment payment system",
+  "main": "server.js",
+  "scripts": {
+    "dev": "kill-port 7100 3001 && concurrently \"npm run server\" \"npm run client\"",
+    "server": "nodemon server.js",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "mysql2": "^3.6.0",
+    "nodemailer": "^6.9.8"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "kill-port": "^2.0.1",
+    "nodemon": "^3.0.1"
+  },
+  "author": "",
+  "license": "ISC"
+}

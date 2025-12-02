@@ -1,0 +1,286 @@
+.cards-page {
+  background: #fdf6ec;
+  min-height: 100vh;
+  padding: 56px 0 80px;
+  color: var(--color-text);
+}
+
+.cards-contract__header-only {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.cards-contract__header-only h1 {
+  margin: 0 0 8px;
+  font-size: clamp(1.9rem, 3.8vw, 2.6rem);
+  font-weight: 700;
+}
+
+.cards-contract__header-only p {
+  margin: 0;
+  max-width: 600px;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.cards-contract__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: rgba(34, 87, 185, 0.12);
+  color: #1a2f5d;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 10px;
+}
+
+.cards-contract__selector-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 280px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 18px;
+  border-radius: 28px;
+  box-shadow: 0 18px 40px rgba(34, 87, 185, 0.08);
+  border: 1px solid rgba(34, 87, 185, 0.08);
+}
+
+.cards-contract__selector-display {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(240, 248, 255, 0.96), rgba(223, 238, 255, 0.96));
+  border-radius: 26px;
+  border: 1px solid rgba(34, 87, 185, 0.22);
+  box-shadow: 0 18px 38px rgba(34, 87, 185, 0.12);
+}
+
+.cards-contract__selector-display .selector-product {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.cards-contract__selector-display img {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  object-fit: cover;
+  background: rgba(34, 87, 185, 0.14);
+  border: 1px solid rgba(34, 87, 185, 0.25);
+}
+
+.cards-contract__selector-display strong {
+  display: block;
+  font-size: 1.1rem;
+  color: #143065;
+  font-weight: 700;
+}
+
+.cards-contract__selector-display span {
+  display: block;
+  font-size: 0.86rem;
+  color: rgba(20, 48, 101, 0.65);
+}
+
+.cards-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  box-shadow: 0 12px 28px rgba(178, 90, 43, 0.16);
+  border: 2px solid transparent;
+}
+
+.cards-status-badge--cancelled {
+  background: linear-gradient(135deg, #d93d54 0%, #ff6b6b 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 18px 40px rgba(217, 61, 84, 0.32);
+  border: none;
+}
+
+.cards-status-badge--pending {
+  background: linear-gradient(135deg, #facc58 0%, #f5a623 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 16px 36px rgba(240, 163, 51, 0.26);
+  border-color: transparent !important;
+}
+
+.cards-status-badge--awaiting {
+  background: #1d3f8d !important;
+  color: #ffffff !important;
+  border-color: #183679 !important;
+  box-shadow: 0 14px 32px rgba(29, 63, 141, 0.28);
+}
+
+.cards-contract__selector {
+  min-width: 280px;
+  max-width: 340px;
+  border-radius: 22px;
+  padding: 12px 16px;
+  border: 1px solid rgba(34, 87, 185, 0.45);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 14px 30px rgba(34, 87, 185, 0.16);
+  font-weight: 600;
+  color: #1a2f5d;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='22' height='22' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%232257B9' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 18px) center;
+  background-size: 18px 18px;
+  padding-right: 56px;
+}
+
+.cards-contract__selector:hover,
+.cards-contract__selector:focus {
+  border-color: rgba(34, 87, 185, 0.75);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 20px 40px rgba(34, 87, 185, 0.24);
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 1);
+}
+
+.cards-contract__selector:focus-visible {
+  outline: 3px solid rgba(34, 87, 185, 0.35);
+  outline-offset: 3px;
+}
+
+.cards-contract__alert {
+  margin-bottom: 16px;
+}
+
+.cards-contract__loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-muted);
+}
+
+.cards-contract__summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.cards-summary {
+  margin: 18px 0 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.cards-summary__item {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 22px;
+  padding: 18px 20px;
+  box-shadow: 0 18px 36px rgba(34, 87, 185, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid rgba(34, 87, 185, 0.1);
+}
+
+.cards-summary__item .label {
+  font-size: 0.86rem;
+  color: rgba(20, 48, 101, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.cards-summary__item strong {
+  font-size: 1.2rem;
+  color: #143065;
+}
+
+.cards-summary__item p {
+  margin: 0;
+  color: rgba(20, 48, 101, 0.78);
+  line-height: 1.6;
+  font-size: 0.94rem;
+}
+
+.cards-summary__address {
+  white-space: pre-line;
+}
+
+.cards-contract__table thead th {
+  background: transparent;
+  color: rgba(72, 52, 36, 0.82);
+  font-size: 0.88rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.cards-contract__table tbody tr:nth-child(odd) {
+  background: transparent;
+}
+
+.cards-contract__table {
+  margin-bottom: 0;
+  color: #143065;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.cards-contract__table td,
+.cards-contract__table th {
+  padding: 10px 12px;
+  vertical-align: middle;
+  white-space: nowrap;
+  border-top: none;
+}
+
+.cards-contract__table tbody tr:hover {
+  background: transparent;
+}
+
+.cards-contract__empty {
+  margin: 0;
+  color: rgba(20, 48, 101, 0.6);
+}
+
+.cards-contract__table-wrapper {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 28px;
+  border: 1px solid rgba(34, 87, 185, 0.12);
+  box-shadow: 0 22px 44px rgba(34, 87, 185, 0.14);
+  padding: 24px;
+  margin-top: 18px;
+  backdrop-filter: blur(6px);
+}
+
+@media (max-width: 768px) {
+  .cards-page {
+    padding: 32px 0 56px;
+  }
+
+  .cards-contract__selector-shell {
+    width: 100%;
+    min-width: 100%;
+    padding: 16px;
+  }
+
+  .cards-contract__selector {
+    max-width: 100%;
+  }
+}
+
